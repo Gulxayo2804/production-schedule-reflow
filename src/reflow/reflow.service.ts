@@ -130,7 +130,55 @@ export class ReflowService {
         workOrders: WorkOrderDocument[],
         input: ReflowInput
     ): WorkOrderDocument[] {
-        // @upgrade: implement scheduling logic
+
+        const workCenterLastEnd = new Map<string, Date>();
+
+        const workOrderMap = new Map<string, WorkOrderDocument>();
+        for (const wo of workOrders) {
+            workOrderMap.set(wo.docId, wo);
+        }
+
+        for (const order of workOrders) {
+
+            if (order.data.isMaintenance) {
+                continue; // skip for now
+            }
+
+            const originalStart = new Date(order.data.startDate);
+
+            // 1.Dependency constraint
+            let dependencyEnd = originalStart;
+
+            for (const parentId of order.data.dependsOnWorkOrderIds) {
+                const parent = workOrderMap.get(parentId);
+                if (!parent) continue;
+
+                const parentEnd = new Date(parent.data.endDate);
+                if (parentEnd > dependencyEnd) {
+                    dependencyEnd = parentEnd;
+                }
+            }
+
+            //2. Work center conflict constraint
+            const lastEndOnCenter = workCenterLastEnd.get(order.data.workCenterId);
+
+            let startTime = dependencyEnd;
+
+            if (lastEndOnCenter && lastEndOnCenter > startTime) {
+                startTime = lastEndOnCenter;
+            }
+
+            // 3. Calculate new end time
+            const newEnd = new Date(startTime.getTime() + order.data.durationMinutes * 60000);
+
+            // Update order
+            order.data.startDate = startTime.toISOString();
+            order.data.endDate = newEnd.toISOString();
+
+            // Update work center last end
+            workCenterLastEnd.set(order.data.workCenterId, newEnd);
+        }
+
         return workOrders;
     }
 

@@ -7,5 +7,11 @@ const result = service.reflow(basicDependencyScenario);
 
 console.log("Sorted Work Orders:");
 for (const wo of result.updatedWorkOrders) {
-  console.log(wo.docId);
+  console.log(
+    wo.docId,
+    "Start:", wo.data.startDate,
+    "End:", wo.data.endDate
+  );
 }
+
+console.log("Changes:", result.changes);
