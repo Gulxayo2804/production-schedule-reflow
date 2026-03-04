@@ -17,7 +17,7 @@ export class ReflowService {
         // Step 2: Clone work orders (avoid mutating original input)
         const workOrders = this.cloneWorkOrders(input.workOrders);
 
-        // Step 3: Validate dependencies (cycle detection later)
+        // Step 3: Validate dependencies (cycle detection)
         this.validateDependencies(workOrders);
 
         // Step 4: Sort work orders based on dependencies
@@ -150,7 +150,7 @@ export class ReflowService {
         for (const order of workOrders) {
 
             if (order.data.isMaintenance) {
-                continue; // skip for now
+                continue; 
             }
 
             const originalStart = new Date(order.data.startDate);
