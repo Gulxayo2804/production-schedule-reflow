@@ -5,6 +5,7 @@ import {
     ReflowChange
 } from './types';
 import { calculateEndDateWithShifts } from "../utils/date-utils";
+import { adjustForMaintenanceWindows } from "../utils/date-utils";
 
 export class ReflowService {
     public reflow(input: ReflowInput): ReflowResult {
@@ -185,6 +186,14 @@ export class ReflowService {
 
             const newEnd = new Date(newEndISO!);
 
+            const adjusted = adjustForMaintenanceWindows(
+                startTime.toISOString(),
+                newEnd.toISOString(),
+                workCenter.data.maintenanceWindows
+            );
+
+            order.data.startDate = adjusted.start;
+            order.data.endDate = adjusted.end;
             // Update order
             order.data.startDate = startTime.toISOString();
             order.data.endDate = newEnd.toISOString();

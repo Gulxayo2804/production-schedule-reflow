@@ -62,3 +62,33 @@ export function calculateEndDateWithShifts(
 
   return current.toISO();
 }
+
+export function adjustForMaintenanceWindows(
+  startISO: string,
+  endISO: string,
+  maintenanceWindows: { startDate: string; endDate: string }[]
+): { start: string; end: string } {
+
+  let start = DateTime.fromISO(startISO);
+  let end = DateTime.fromISO(endISO);
+
+  for (const window of maintenanceWindows) {
+    const mStart = DateTime.fromISO(window.startDate);
+    const mEnd = DateTime.fromISO(window.endDate);
+
+    const overlap =
+      start < mEnd && end > mStart;
+
+    if (overlap) {
+      const shift = mEnd.diff(mStart).as("milliseconds");
+
+      start = start.plus({ milliseconds: shift });
+      end = end.plus({ milliseconds: shift });
+    }
+  }
+
+  return {
+    start: start.toISO()!,
+    end: end.toISO()!
+  };
+}

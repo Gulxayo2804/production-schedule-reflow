@@ -17,7 +17,12 @@ export const workCenters: WorkCenterDocument[] = [
         { dayOfWeek: 4, startHour: 8, endHour: 17 },
         { dayOfWeek: 5, startHour: 8, endHour: 17 }
       ],
-      maintenanceWindows: []
+      maintenanceWindows: [
+        {
+          startDate: "2024-07-29T11:00:00Z",
+          endDate: "2024-07-29T13:00:00Z"
+        }
+      ]
     }
   }
 ];
