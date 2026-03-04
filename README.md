@@ -81,6 +81,34 @@ The reflow process follows these steps:
 
 ---
 
+## Complexity Analysis
+
+Let **N** be the number of work orders and **E** the number of dependency edges.
+
+### Dependency Validation
+Cycle detection using DFS runs in:
+O(N + E)
+
+### Topological Sorting
+Kahn’s algorithm processes each node and edge once:
+O(N + E)
+
+### Scheduling Phase
+Each work order is scheduled once and performs constant-time checks for:
+- dependency completion
+- work center availability
+- shift calculations
+
+Overall scheduling complexity:
+O(N)
+
+### Overall Complexity
+The total complexity of the reflow process is approximately:
+
+O(N + E)
+
+This scales well for large production schedules and was tested with datasets containing 500+ work orders.
+
 ## Running the Project
 
 Install dependencies:
