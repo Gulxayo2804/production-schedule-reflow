@@ -4,6 +4,7 @@ import {
     WorkOrderDocument,
     ReflowChange
 } from './types';
+import { calculateEndDateWithShifts } from "../utils/date-utils";
 
 export class ReflowService {
     public reflow(input: ReflowInput): ReflowResult {
@@ -130,6 +131,7 @@ export class ReflowService {
         workOrders: WorkOrderDocument[],
         input: ReflowInput
     ): WorkOrderDocument[] {
+        const workCenterMap = new Map(input.workCenters.map(wc => [wc.docId, wc]));
 
         const workCenterLastEnd = new Map<string, Date>();
 
@@ -169,7 +171,19 @@ export class ReflowService {
             }
 
             // 3. Calculate new end time
-            const newEnd = new Date(startTime.getTime() + order.data.durationMinutes * 60000);
+            const workCenter = workCenterMap.get(order.data.workCenterId);
+
+            if (!workCenter) {
+                throw new Error(`Work center not found: ${order.data.workCenterId}`);
+            }
+
+            const newEndISO = calculateEndDateWithShifts(
+                startTime.toISOString(),
+                order.data.durationMinutes,
+                workCenter.data.shifts
+            );
+
+            const newEnd = new Date(newEndISO!);
 
             // Update order
             order.data.startDate = startTime.toISOString();
