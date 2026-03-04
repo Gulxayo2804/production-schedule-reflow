@@ -1,7 +1,6 @@
 import { ReflowService } from "../reflow/reflow.service";
 import { basicDependencyScenario } from "../scenarios/scenario-basic-dependency";
 import { shiftBoundaryScenario } from "../scenarios/scenario-shift-boundary";
-import { maintenanceConflictScenario } from "../scenarios/scenario-maintenance-conflict";
 import { generateLargeScenario } from "../scenarios/scenario-large-dataset";
 
 describe("Reflow Scheduler", () => {
