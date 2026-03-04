@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "test": "jest"
   },
   "keywords": [],
   "author": "Gulkhayo Khamzaeva",
@@ -15,8 +16,11 @@
     "luxon": "^3.7.2"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/luxon": "^3.7.1",
     "@types/node": "^20.11.30",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
