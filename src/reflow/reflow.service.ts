@@ -6,22 +6,27 @@ import {
 } from './types';
 import { calculateEndDateWithShifts } from "../utils/date-utils";
 import { adjustForMaintenanceWindows } from "../utils/date-utils";
+import { validateInput } from "./constraint-checker";
 
 export class ReflowService {
     public reflow(input: ReflowInput): ReflowResult {
-        // Step 1: Clone work orders (avoid mutating original input)
+
+        //Step 1️. Validate ERP data
+        validateInput(input.workOrders, input.workCenters);
+
+        // Step 2: Clone work orders (avoid mutating original input)
         const workOrders = this.cloneWorkOrders(input.workOrders);
 
-        // Step 2: Validate dependencies (cycle detection later)
+        // Step 3: Validate dependencies (cycle detection later)
         this.validateDependencies(workOrders);
 
-        // Step 3: Sort work orders based on dependencies
+        // Step 4: Sort work orders based on dependencies
         const sortedWorkOrders = this.sortByDependencies(workOrders);
 
-        // Step 4: Apply scheduling logic (core algorithm)
+        // Step 5: Apply scheduling logic (core algorithm)
         const updatedWorkOrders = this.applyScheduling(sortedWorkOrders, input);
 
-        // Step 5: Generate change log
+        // Step 6: Generate change log
         const changes = this.generateChanges(input.workOrders, updatedWorkOrders);
         return {
             updatedWorkOrders,
@@ -132,6 +137,7 @@ export class ReflowService {
         workOrders: WorkOrderDocument[],
         input: ReflowInput
     ): WorkOrderDocument[] {
+
         const workCenterMap = new Map(input.workCenters.map(wc => [wc.docId, wc]));
 
         const workCenterLastEnd = new Map<string, Date>();
