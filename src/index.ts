@@ -1,31 +1,43 @@
 import { ReflowService } from "./reflow/reflow.service";
+
 import { basicDependencyScenario } from "./scenarios/scenario-basic-dependency";
-import { calculateEndDateWithShifts } from "./utils/date-utils";
+import { delayCascadeScenario } from "./scenarios/scenario-delay-cascade";
+import { shiftBoundaryScenario } from "./scenarios/scenario-shift-boundary";
+import { maintenanceConflictScenario } from "./scenarios/scenario-maintenance-conflict";
+import { generateLargeScenario } from "./scenarios/scenario-large-dataset";
 
 const service = new ReflowService();
 
-const result = service.reflow(basicDependencyScenario);
+function runScenario(name: string, scenario: any) {
+  console.log("\n===============================");
+  console.log(`Running Scenario: ${name}`);
+  console.log("===============================\n");
 
-const end = calculateEndDateWithShifts(
-  "2024-07-29T16:00:00Z", // Monday 4PM
-  120,
-  [
-    { dayOfWeek: 1, startHour: 8, endHour: 17 },
-    { dayOfWeek: 2, startHour: 8, endHour: 17 },
-    { dayOfWeek: 3, startHour: 8, endHour: 17 },
-    { dayOfWeek: 4, startHour: 8, endHour: 17 },
-    { dayOfWeek: 5, startHour: 8, endHour: 17 }
-  ]
-);
+  console.time("reflow");
 
-console.log("Shift-aware end:", end);
-console.log("Sorted Work Orders:");
-for (const wo of result.updatedWorkOrders) {
-  console.log(
-    wo.docId,
-    "Start:", wo.data.startDate,
-    "End:", wo.data.endDate
-  );
+  const result = service.reflow(scenario);
+
+  console.timeEnd("reflow");
+
+  console.log("Total Work Orders:", result.updatedWorkOrders.length);
+  console.log("Total Changes:", result.changes.length);
+
+  console.log("\nFirst 10 Results:");
+
+  result.updatedWorkOrders.slice(0, 10).forEach(o => {
+    console.log(
+      o.docId,
+      "Start:", o.data.startDate,
+      "End:", o.data.endDate
+    );
+  });
 }
 
-console.log("Changes:", result.changes);
+// Demo scenarios
+runScenario("Basic Dependency", basicDependencyScenario);
+runScenario("Delay Cascade", delayCascadeScenario);
+runScenario("Shift Boundary", shiftBoundaryScenario);
+runScenario("Maintenance Conflict", maintenanceConflictScenario);
+
+// Large performance test
+runScenario("Large Dataset (500 Orders)", generateLargeScenario(500));
