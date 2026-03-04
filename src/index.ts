@@ -1,5 +1,11 @@
 import { ReflowService } from "./reflow/reflow.service";
+import { basicDependencyScenario } from "./scenarios/scenario-basic-dependency";
 
 const service = new ReflowService();
 
-console.log("Reflow Service Initialized:", typeof service);
+const result = service.reflow(basicDependencyScenario);
+
+console.log("Sorted Work Orders:");
+for (const wo of result.updatedWorkOrders) {
+  console.log(wo.docId);
+}

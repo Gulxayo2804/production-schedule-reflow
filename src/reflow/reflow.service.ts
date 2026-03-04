@@ -41,13 +41,89 @@ export class ReflowService {
     };
 
     private validateDependencies(workOrders: WorkOrderDocument[]): void {
-        // @upgrade: implement cycle detection
-    };
+        const graph = new Map<string, string[]>();
+
+        for (const order of workOrders) {
+            graph.set(order.docId, order.data.dependsOnWorkOrderIds);
+        }
+
+        const visited = new Set<string>();
+        const visiting = new Set<string>();
+
+        const dfs = (node: string) => {
+            if (visiting.has(node)) {
+                throw new Error(`Circular dependency detected involving ${node}`);
+            }
+
+            if (visited.has(node)) return;
+
+            visiting.add(node);
+
+            const neighbors = graph.get(node) || [];
+
+            for (const neighbor of neighbors) {
+                dfs(neighbor);
+            }
+
+            visiting.delete(node);
+            visited.add(node);
+        };
+
+        for (const node of graph.keys()) {
+            dfs(node);
+        }
+    }
+
     private sortByDependencies(
         workOrders: WorkOrderDocument[]
     ): WorkOrderDocument[] {
-        // @upgrade: implement topological sort
-        return workOrders;
+
+        const graph = new Map<string, string[]>();
+        const inDegree = new Map<string, number>();
+
+        for (const order of workOrders) {
+            graph.set(order.docId, []);
+            inDegree.set(order.docId, 0);
+        }
+
+        for (const order of workOrders) {
+            for (const parentId of order.data.dependsOnWorkOrderIds) {
+                graph.get(parentId)?.push(order.docId);
+                inDegree.set(order.docId, (inDegree.get(order.docId) || 0) + 1);
+            }
+        }
+
+        const queue: string[] = [];
+        for (const [node, degree] of inDegree.entries()) {
+            if (degree === 0) {
+                queue.push(node);
+            }
+        }
+
+        const sorted: WorkOrderDocument[] = [];
+
+        while (queue.length > 0) {
+            const node = queue.shift()!;
+            const order = workOrders.find(o => o.docId === node);
+
+            if (order) {
+                sorted.push(order);
+            }
+
+            for (const neighbor of graph.get(node) || []) {
+                inDegree.set(neighbor, (inDegree.get(neighbor) || 0) - 1);
+
+                if (inDegree.get(neighbor) === 0) {
+                    queue.push(neighbor);
+                }
+            }
+        }
+
+        if (sorted.length !== workOrders.length) {
+            throw new Error("Dependency resolution failed — possible cycle detected.");
+        }
+
+        return sorted;
     }
 
     private applyScheduling(
